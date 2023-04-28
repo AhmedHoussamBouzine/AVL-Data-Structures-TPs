@@ -83,14 +83,14 @@ Node *leftRotate(Node *x)
     return y;
 }
 
-Node *insertNode(Node *node, Etudiant *etudiant)
+Node *insertNodeByMatricule(Node *node, Etudiant *etudiant)
 {
     if (node == NULL)
         return createNode(etudiant);
-    if (etudiant->moyenne < node->etudiant->matricule)
-    node->left = insertNode(node->left, etudiant);
-    else if (etudiant->moyenne > node->etudiant->matricule)
-        node->right = insertNode(node->right, etudiant);
+    if (etudiant->matricule < node->etudiant->matricule)
+    node->left = insertNodeByMatricule(node->left, etudiant);
+    else if (etudiant->matricule > node->etudiant->matricule)
+        node->right = insertNodeByMatricule(node->right, etudiant);
     else return node;
     node->height = 1 + max(height(node->left), height(node->right));
     int balance = getBalance(node);
@@ -106,6 +106,80 @@ Node *insertNode(Node *node, Etudiant *etudiant)
     if (balance < -1 && etudiant->matricule > node->right->etudiant->matricule)
         return leftRotate(node);
     if (balance < -1 && etudiant->matricule < node->right->etudiant->matricule)
+    { // Right Left Case
+        node->right = rightRotate(node->right);
+        return leftRotate(node);
+    }
+    return node;
+}
+Node *insertNodeByMoyenne(Node *node, Etudiant *etudiant)
+{
+    if (node == NULL)
+        return createNode(etudiant);
+    if (etudiant->moyenne < node->etudiant->moyenne)
+    node->left = insertNodeByMoyenne(node->left, etudiant);
+    else if (etudiant->moyenne > node->etudiant->moyenne)
+        node->right = insertNodeByMoyenne(node->right, etudiant);
+    else return node;
+    node->height = 1 + max(height(node->left), height(node->right));
+    int balance = getBalance(node);
+    // Left Left Case
+    if (balance > 1 && etudiant->moyenne < node->left->etudiant->moyenne)
+        return rightRotate(node);
+    if (balance > 1 && etudiant->moyenne > node->left->etudiant->moyenne)
+    { // Left Right Case
+        node->left = leftRotate(node->left);
+        return rightRotate(node);
+    }
+    // Right Right Case
+    if (balance < -1 && etudiant->moyenne > node->right->etudiant->moyenne)
+        return leftRotate(node);
+    if (balance < -1 && etudiant->moyenne < node->right->etudiant->moyenne)
+    { // Right Left Case
+        node->right = rightRotate(node->right);
+        return leftRotate(node);
+    }
+    return node;
+}
+/// l'aide d'une fontion pointeur
+
+int cmpMtr(Etudiant * etudiant1, Etudiant* etudiant2){
+   if(etudiant1->matricule == etudiant2->matricule) return 0;
+   if(etudiant1->matricule > etudiant2->matricule) return 1;
+   return -1;
+   
+}
+int cmpMoy(Etudiant * etudiant1, Etudiant* etudiant2){
+     if(etudiant1->moyenne == etudiant2->moyenne) return 0;
+   if(etudiant1->moyenne > etudiant2->moyenne) return 1;
+   return -1;
+}
+/*
+  insert(arbre,etudiant,cmpMtr)
+*/
+Node *insertNodeByCMT(Node *node, Etudiant *etudiant,int (*cmp)(Etudiant*,Etudiant*))
+{
+    if (node == NULL)
+        return createNode(etudiant);
+    if ((*cmp)(etudiant,node->etudiant)==-1)
+    node->left = insertNodeByMoyenne(node->left, etudiant,cmp);
+    else if ((*cmp)(etudiant, node->etudiant)==1)
+        node->right = insertNodeByMoyenne(node->right, etudiant);
+    else return node;
+    node->height = 1 + max(height(node->left), height(node->right));
+    int balance = getBalance(node);
+    // Left Left Case
+    if (balance > 1 && etudiant->moyenne < node->left->etudiant->moyenne)
+        return rightRotate(node);
+    if (balance > 1 && etudiant->moyenne > node->left->etudiant->moyenne)
+    { // Left Right Case
+        node->left = leftRotate(node->left);
+        return rightRotate(node);
+    }
+    // Right Right Case
+    if (balance < -1 && etudiant->moyenne > node->right->etudiant->moyenne)
+        return leftRotate(node);
+    if (balance < -1 && etudiant->moyenne < node->right->etudiant->moyenne)
     { // Right Left Case
         node->right = rightRotate(node->right);
         return leftRotate(node);
@@ -192,4 +266,14 @@ Node **find(Node **node, Etudiant *etudiant)
 
 int main(){
     //test
+
+
+    Node * aMtr = NULL , *aMoy=NULL;
+    Etudiant *etudiant = (Etudiant*)malloc(sizeof(Etudiant));
+    etudiant->matricule = 1;
+    strcpy(etudiant->nom,"houssam");
+    etudiant->moyenne =  12;
+    insertNodeByCMT(aMtr,etudiant,cmpMtr);
+    insertNodeByCMT(aMoy,etudiant,cmpMoy);
+
 }
