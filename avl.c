@@ -1,4 +1,4 @@
-//Ahmed houssam BOUZINE  II-BDCC1
+// Ahmed houssam BOUZINE  II-BDCC1
 
 #include <stdio.h>
 #include <string.h>
@@ -18,7 +18,7 @@ typedef struct Node
     int height;
 } Node;
 
-Etudiant* createEtudiant()
+Etudiant *createEtudiant()
 {
     Etudiant *etudiant;
     printf("Entrez le nom de l'etudiant: ");
@@ -30,9 +30,9 @@ Etudiant* createEtudiant()
     return etudiant;
 }
 
-Node* createNode(Etudiant* etudiant)
+Node *createNode(Etudiant *etudiant)
 {
-    Node* node;
+    Node *node;
     node->etudiant = malloc(sizeof(Etudiant));
     node->etudiant->matricule = etudiant->matricule;
     node->etudiant->moyenne = etudiant->moyenne;
@@ -88,10 +88,11 @@ Node *insertNodeByMatricule(Node *node, Etudiant *etudiant)
     if (node == NULL)
         return createNode(etudiant);
     if (etudiant->matricule < node->etudiant->matricule)
-    node->left = insertNodeByMatricule(node->left, etudiant);
+        node->left = insertNodeByMatricule(node->left, etudiant);
     else if (etudiant->matricule > node->etudiant->matricule)
         node->right = insertNodeByMatricule(node->right, etudiant);
-    else return node;
+    else
+        return node;
     node->height = 1 + max(height(node->left), height(node->right));
     int balance = getBalance(node);
     // Left Left Case
@@ -117,10 +118,11 @@ Node *insertNodeByMoyenne(Node *node, Etudiant *etudiant)
     if (node == NULL)
         return createNode(etudiant);
     if (etudiant->moyenne < node->etudiant->moyenne)
-    node->left = insertNodeByMoyenne(node->left, etudiant);
+        node->left = insertNodeByMoyenne(node->left, etudiant);
     else if (etudiant->moyenne > node->etudiant->moyenne)
         node->right = insertNodeByMoyenne(node->right, etudiant);
-    else return node;
+    else
+        return node;
     node->height = 1 + max(height(node->left), height(node->right));
     int balance = getBalance(node);
     // Left Left Case
@@ -143,29 +145,35 @@ Node *insertNodeByMoyenne(Node *node, Etudiant *etudiant)
 }
 /// l'aide d'une fontion pointeur
 
-int cmpMtr(Etudiant * etudiant1, Etudiant* etudiant2){
-   if(etudiant1->matricule == etudiant2->matricule) return 0;
-   if(etudiant1->matricule > etudiant2->matricule) return 1;
-   return -1;
-   
+int cmpMtr(Etudiant *etudiant1, Etudiant *etudiant2)
+{
+    if (etudiant1->matricule == etudiant2->matricule)
+        return 0;
+    if (etudiant1->matricule > etudiant2->matricule)
+        return 1;
+    return -1;
 }
-int cmpMoy(Etudiant * etudiant1, Etudiant* etudiant2){
-     if(etudiant1->moyenne == etudiant2->moyenne) return 0;
-   if(etudiant1->moyenne > etudiant2->moyenne) return 1;
-   return -1;
+int cmpMoy(Etudiant *etudiant1, Etudiant *etudiant2)
+{
+    if (etudiant1->moyenne == etudiant2->moyenne)
+        return 0;
+    if (etudiant1->moyenne > etudiant2->moyenne)
+        return 1;
+    return -1;
 }
 /*
   insert(arbre,etudiant,cmpMtr)
 */
-Node *insertNodeByCMT(Node *node, Etudiant *etudiant,int (*cmp)(Etudiant*,Etudiant*))
+Node *insertNodeByCMT(Node *node, Etudiant *etudiant, int (*cmp)(Etudiant *, Etudiant *))
 {
     if (node == NULL)
         return createNode(etudiant);
-    if ((*cmp)(etudiant,node->etudiant)==-1)
-    node->left = insertNodeByMoyenne(node->left, etudiant,cmp);
-    else if ((*cmp)(etudiant, node->etudiant)==1)
+    if ((*cmp)(etudiant, node->etudiant) == -1)
+        node->left = insertNodeByMoyenne(node->left, etudiant, cmp);
+    else if ((*cmp)(etudiant, node->etudiant) == 1)
         node->right = insertNodeByMoyenne(node->right, etudiant);
-    else return node;
+    else
+        return node;
     node->height = 1 + max(height(node->left), height(node->right));
     int balance = getBalance(node);
     // Left Left Case
@@ -224,8 +232,64 @@ Node *deleteNode(Node *root, Etudiant *etudiant)
         else
         { // Node with two children: Get the inorder successor
             Node *temp = minValueNode(root->right);
-            root->etudiant->matricule = temp->etudiant->matricule;            // Copy the inorder successor's data to this node
-            root->right = deleteNode(root->right, temp->etudiant);           // Delete the inorder successor
+            root->etudiant->matricule = temp->etudiant->matricule; // Copy the inorder successor's data to this node
+            root->right = deleteNode(root->right, temp->etudiant); // Delete the inorder successor
+        }
+    }
+    if (root == NULL)
+        return root;                                                 // If the tree had only one node then return
+    root->height = 1 + max(height(root->left), height(root->right)); // Update height of the current node
+    int balance = getBalance(root);                                  // Get balance factor of the current node
+    // Les 4 cas de déséquilibre
+    // Left Left Case
+    if (balance > 1 && getBalance(root->left) >= 0)
+        return rightRotate(root);
+    if (balance > 1 && getBalance(root->left) < 0)
+    { // Left Right Case
+        root->left = leftRotate(root->left);
+        return rightRotate(root);
+    }
+    // Right Right Case
+    if (balance < -1 && getBalance(root->right) <= 0)
+        return leftRotate(root);
+    if (balance < -1 && getBalance(root->right) > 0)
+    { // Right Left Case
+        root->right = rightRotate(root->right);
+        return leftRotate(root);
+    }
+    return root;
+}
+
+Node *deleteNode(Node *root, Etudiant *etudiant, int (*cmp)(Etudiant *, Etudiant *))
+{
+    // Comme pour la suppression dans un ABR
+    if (root == NULL)
+        return root;
+    if ((*cmp)(etudiant, node->etudiant) == -1)
+        root->left = deleteNode(root->left, etudiant);
+    else if ((*cmp)(etudiant, node->etudiant) == 1)
+        root->right = deleteNode(root->right, etudiant);
+    else
+    {
+        if ((root->left == NULL) || (root->right == NULL))
+        { // Node with only one child or no child
+            Node *temp = root->left ? root->left : root->right;
+            if (temp == NULL)
+            { // No child case
+                free(root);
+                root = NULL;
+            }
+            else
+            { // One child case
+                *root = *temp;
+                free(temp);
+            }
+        }
+        else
+        { // Node with two children: Get the inorder successor
+            Node *temp = minValueNode(root->right);
+            root->etudiant->matricule = temp->etudiant->matricule; // Copy the inorder successor's data to this node
+            root->right = deleteNode(root->right, temp->etudiant); // Delete the inorder successor
         }
     }
     if (root == NULL)
@@ -263,17 +327,37 @@ Node **find(Node **node, Etudiant *etudiant)
     return node;
 }
 
+void infixe(Node *root)
+{
+    if (root)
+    {
+        infixe(root->left);
 
-int main(){
-    //test
+        printf("(%d,%s,%5.2f)->", root->etudiant->matricule, root->etudiant->nom, root->etudiant->moyenne);
 
+        infixe(root->right);
+    }
+}
+void scanEtudian(Etudiant *etudiant)
+{
+    printf("mtr:");
+    scanf("%d", &etudiant->matricule);
+    fflush(stdin);
+    printf("nom:");
+    gets(etudiant->matricule);
+    printf("moy:");
+    scanf("%d", &etudiant->moyenne);
+}
 
-    Node * aMtr = NULL , *aMoy=NULL;
-    Etudiant *etudiant = (Etudiant*)malloc(sizeof(Etudiant));
+int main()
+{
+    // test
+
+    Node *aMtr = NULL, *aMoy = NULL;
+    Etudiant *etudiant = (Etudiant *)malloc(sizeof(Etudiant));
     etudiant->matricule = 1;
-    strcpy(etudiant->nom,"houssam");
-    etudiant->moyenne =  12;
-    insertNodeByCMT(aMtr,etudiant,cmpMtr);
-    insertNodeByCMT(aMoy,etudiant,cmpMoy);
-
+    strcpy(etudiant->nom, "houssam");
+    etudiant->moyenne = 12;
+    insertNodeByCMT(aMtr, etudiant, cmpMtr);
+    insertNodeByCMT(aMoy, etudiant, cmpMoy);
 }
