@@ -266,9 +266,9 @@ Node *deleteNode(Node *root, Etudiant *etudiant, int (*cmp)(Etudiant *, Etudiant
     if (root == NULL)
         return root;
     if ((*cmp)(etudiant, node->etudiant) == -1)
-        root->left = deleteNode(root->left, etudiant);
+        root->left = deleteNode(root->left, etudiant,cmp);
     else if ((*cmp)(etudiant, node->etudiant) == 1)
-        root->right = deleteNode(root->right, etudiant);
+        root->right = deleteNode(root->right, etudiant,cmp);
     else
     {
         if ((root->left == NULL) || (root->right == NULL))
@@ -354,10 +354,18 @@ int main()
     // test
 
     Node *aMtr = NULL, *aMoy = NULL;
-    Etudiant *etudiant = (Etudiant *)malloc(sizeof(Etudiant));
-    etudiant->matricule = 1;
-    strcpy(etudiant->nom, "houssam");
-    etudiant->moyenne = 12;
-    insertNodeByCMT(aMtr, etudiant, cmpMtr);
-    insertNodeByCMT(aMoy, etudiant, cmpMoy);
+    char resp;
+    do
+    {
+        Etudiant *etudiant = (Etudiant *)malloc(sizeof(Etudiant));
+        etudiant->matricule = 1;
+        strcpy(etudiant->nom, "houssam");
+        etudiant->moyenne = 12;
+        insertNodeByCMT(aMtr, etudiant, cmpMtr);
+        printf("Y/n?");
+        scanf("%c", &resp);
+    } while (resp == 'Y' || resp == 'y');
+
+    infixe(aMtr);
+    
 }
